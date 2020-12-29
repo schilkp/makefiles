@@ -7,10 +7,10 @@ CFLAGS=-Wall -Wextra -Wpedantic
 TARGET=my_c_program
 
 # Source Directories
-SRC_DIRS=src/ libs/lib1/src/
+SRC_DIRS=src libs/lib1/src
 
 # Include Directories
-INC_DIRS=inc/ libs/lib1/inc/
+INC_DIRS=inc libs/lib1/inc
 
 # Build Directory
 BUILDDIR=build
@@ -19,7 +19,7 @@ BUILDDIR=build
 DEPDIR=$(BUILDDIR)
 
 # Generate list of all source files in SRC_DIRS:
-SOURCES=$(shell find $(SRC_DIRS) -name '*.c')
+SOURCES=$(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.c))
 
 # Generate list of all object files in BUILDDIR to be linked together:
 OBJECTS=$(addprefix $(BUILDDIR)/,$(SOURCES:.c=.o))
@@ -28,7 +28,7 @@ OBJECTS=$(addprefix $(BUILDDIR)/,$(SOURCES:.c=.o))
 DEPENDENCIES=$(addprefix $(DEPDIR)/,$(SOURCES:.c=.d))
 
 # Generate list of all headers in INC_DIRS:
-HEADERS=$(shell find $(INC_DIRS) -name '*.h')
+HEADERS=$(foreach dir, $(INC_DIRS), $(wildcard $(dir)/*.h))
 
 # Generate include flags from INC_DIRS, add to CFLAGS:
 CFLAGS += $(addprefix -I,$(INC_DIRS))
