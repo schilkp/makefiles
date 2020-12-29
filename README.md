@@ -1,8 +1,14 @@
 # Makefiles
 Philipp Schilk 
 
-# C_Generic
+# c_generic
+A generic C makefile.
+Features:
+    - Multiple source/header locations
+    - Automatic source and header discovery
+    - Automatic dependency management (using compatible compiler)
+    - Out-of-source build
 
-# C_Simple
+# c_simple
 
-# STM32
+# stm32
