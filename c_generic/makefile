@@ -42,9 +42,9 @@ CFLAGS += $(DEPFLAGS)
 all: $(TARGET)
 
 clean: 
-	rm -f $(TARGET)
-	rm -rf $(BUILDDIR)
-	rm -rf $(DEPDIR)
+	-rm -f $(TARGET)
+	-rm -rf $(BUILDDIR)
+	-rm -rf $(DEPDIR)
 
 info:
 	@echo Makefile Info:
