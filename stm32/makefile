@@ -23,9 +23,11 @@ BUILD_DIR =  $(BUILD_DIR_ROOT)/$(BUILD)
 # C Files
 # Directories for automatic source discovery
 C_DIRS = \
-Src 
 # Individual sources
 C_SOURCES +=  \
+Core/Src/main.c \
+Core/Src/stm32f3xx_it.c \
+Core/Src/stm32f3xx_hal_msp.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim_ex.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal.c \
@@ -41,13 +43,18 @@ Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_flash_ex.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c_ex.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_exti.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart.c \
+Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_adc.c \
+Core/Src/system_stm32f3xx.c 
+
 # Include Dirs
 C_INC_DIRS =\
-Inc \
+Core/Inc \
 Drivers/STM32F3xx_HAL_Driver/Inc \
 Drivers/STM32F3xx_HAL_Driver/Inc/Legacy \
 Drivers/CMSIS/Device/ST/STM32F3xx/Include \
 Drivers/CMSIS/Include \
+Drivers/CMSIS/Include
 
 # ASM Files
 # Directories for automatic file discovery
@@ -104,8 +111,8 @@ STM32F303xC
 CFLAGS += $(COMMON_FLAGS)
 CFLAGS += $(addprefix -D,$(C_DEFS))
 CFLAGS += $(addprefix -I,$(C_INC_DIRS))
-CFLAGS += -Wall -Wextra -Wpedantic
-CFLAGS += -fdata-sections -ffunction-sections -fstack-usage
+CFLAGS += -Wall -Wextra -Wpedantic -x c -std=c99
+CFLAGS += -fdata-sections -ffunction-sections# -fstack-usage
 
 # Add DEBUG define for debug builds
 ifeq ($(BUILD),debug)
@@ -156,7 +163,7 @@ endif
 ###  Makefile Rules  ###
 ########################
 
-.PHONY: all clean info
+.PHONY: all clean info size
 
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
 
@@ -181,7 +188,7 @@ $(BUILD_DIR)/%.o: %.s makefile
 	@echo "Compiling $<..."
 	@mkdir -p $(dir $@) 
 	@mkdir -p $(dir $(DEP_DIR)/$*.d)
-	@$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(<:.c=.lst) $< -o $@
+	@$(CC) -c $(ASMFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(<:.c=.lst) $< -o $@
 
 # Generate HEX file
 $(BUILD_DIR)/$(TARGET).hex: $(BUILD_DIR)/$(TARGET).elf makefile | $(BUILD_DIR)
@@ -195,17 +202,23 @@ $(BUILD_DIR)/$(TARGET).bin: $(BUILD_DIR)/$(TARGET).elf makefile | $(BUILD_DIR)
 	@$(BIN) $< $@
 	@echo "Successfully built $@"
 
+# Clean build files
 clean: 
 	-rm -rf $(BUILD_DIR)
 	-rm -rf $(DEP_DIR)
 
+# Information output. Unused.
 info:
-	@echo $(C_SOURCES)
-	@echo $(ASM_SOURCES)
+	@echo "STM32 Makefile"
 
+# Get size info for elf file
+size: $(BUILD_DIR)/$(TARGET).elf
+	@$(SZ) $<
 
-ifneq ($(MAKECMDGOALS),clean) # Prevent regeneration of .d files on non-build targets:
-ifneq ($(MAKECMDGOALS),info) 
+# Use bear to generate compile_commands.json. 
+# Useful for clangd/you_complete_me
+compile_commands.json: clean
+	-rm -f compile_commands.json
+	bear make
+
 include $(wildcard $(DEP_DIR)/*.d) # Include generated dependency files, to make .o files depend on the right .h files
-endif
-endif 
