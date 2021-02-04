@@ -3,6 +3,13 @@ Philipp Schilk
 
 # c_generic
 A generic C makefile.
+
+*WIP*
+TODO:
+    - Seperate release/debug builds
+    - Clean-up dependency file generation
+    - Allow for simply listing source files 
+
 Features:   
     - Multiple source/header locations   
     - Automatic source and header discovery    
